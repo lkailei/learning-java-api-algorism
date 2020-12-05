@@ -1,6 +1,6 @@
 package com.kaysanshi.hash;
 /**
- * Ա����Ϣ��
+ *
  * @author Administrator
  *
  */
