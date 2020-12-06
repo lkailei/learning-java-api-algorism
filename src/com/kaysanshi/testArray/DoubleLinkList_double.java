@@ -16,8 +16,8 @@ public class DoubleLinkList_double {
 				last=null;
 			}
 			/**
-			 * 从头结点后进行插入 要对链表判断，判断是否weinul。如果weinull.则设置尾结点为新添加的结点；，如果不为null
-			 * 设置头结点的前一个结点为新添加的结点
+			 * 从头结点后进行插入 要对链表判断，判断是否weinul。如果weinull.则设置尾结点为新添加的结点；
+			 * ，如果不为null设置头结点的前一个结点为新添加的结点
 			 * @param value
 			 */
 			public void insert(long value){
@@ -32,8 +32,8 @@ public class DoubleLinkList_double {
 				first=node;
 			}
 			/**
-			 * 从尾节点进行插入：如果链表为null则直接设置头结点为新添加的结点，否则设置尾结点的后一个结点为新添加结点
-			 * 同时设置新添加的节点的前一个结点为尾结点
+			 * 从尾节点进行插入：如果链表为null则直接设置头结点为新添加的结点，
+			 * 否则设置尾结点的后一个结点为新添加结点同时设置新添加的节点的前一个结点为尾结点
 			 */
 			public void insertLast(long value){
 				Node node=new Node(value);
@@ -46,8 +46,8 @@ public class DoubleLinkList_double {
 				last=node;
 			}
 			/**
-			 * 从头部删除的第一个节点:判断头结点是否有下一个结点，如果没有则设置尾节点为null,否则设置头结点的下一个结点的
-			 * previous为null;
+			 * 从头部删除的第一个节点:判断头结点是否有下一个结点，如果没有则设置尾节点为null,
+			 * 否则设置头结点的下一个结点的previous为null;
 			 * @return
 			 */
 			public Node deleteFisrt(){
@@ -131,7 +131,7 @@ public class DoubleLinkList_double {
 				return current;
 			}
 			/**
-			 * 判断weinull
+			 * 判断null
 			 * @return
 			 */
 			public boolean isEmpty(){
