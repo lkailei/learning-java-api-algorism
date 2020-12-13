@@ -131,7 +131,7 @@ class Node {
         this.next = next;
     }
 
-    public Node(long data, Node privious,Node next) {
+    public Node(long data, Node privious, Node next) {
         this.data = data;
         this.next = next;
         this.privious = privious;

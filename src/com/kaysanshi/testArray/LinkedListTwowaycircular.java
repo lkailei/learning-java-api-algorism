@@ -3,6 +3,7 @@ package com.kaysanshi.testArray;
 /**
  * 双向循环链表
  * 双向循环链表不只是只有头指针head,还有尾结点end
+ *
  * @Author kaysanshi
  * @date:2020/12/6
  */
@@ -51,7 +52,7 @@ public class LinkedListTwowaycircular {
 
     //初始化链表
     public void initlist() {
-        end = new Node ();
+        end = new Node();
         head = new Node(0, null, end);
         // 这个地方进行初始化的时候是将下个尾节点的next指向头部
         end.privious = head;
@@ -65,8 +66,8 @@ public class LinkedListTwowaycircular {
     }
 
     //获取节点
-    public Node  getNode(int index) {
-        Node  n;
+    public Node getNode(int index) {
+        Node n;
         // 判断index是否大于中间的
         if (index >= size / 2) {
             // 若大于，说明节点是偏后的，因此从end开始一路prev上去
@@ -97,9 +98,9 @@ public class LinkedListTwowaycircular {
     //插入元素
     public void insert(int i, long a) {
         // 获取待插入元素的节点node
-        Node  n = getNode(i);
+        Node n = getNode(i);
         // 创建一个节点newnode，next指向node，prev指向node.prev
-        Node newNode = new Node (a, n.privious, n);
+        Node newNode = new Node(a, n.privious, n);
         // 把node.prev该节点的next指向新的结点
         n.privious.next = newNode;
         // 把node的前一个节点prev指向新的node
@@ -110,7 +111,7 @@ public class LinkedListTwowaycircular {
     //删除元素
     public long remove(int i) {
         // 获取待删除元素的节点node
-        Node  n = getNode(i);
+        Node n = getNode(i);
         long data = n.data;
         // 把node前一个节点的next指针设置为node的后一个节点
         n.privious.next = n.next;
@@ -128,7 +129,7 @@ public class LinkedListTwowaycircular {
 
     //为i位置元素重新赋值
     public long set(int i, long a) {
-        Node  n = getNode(i);
+        Node n = getNode(i);
         long old = n.data;
         n.data = a;
         return old;
@@ -147,7 +148,7 @@ public class LinkedListTwowaycircular {
         }
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         // TODO Auto-generated method stub
         LinkedListTwowaycircular list = new LinkedListTwowaycircular();
         list.initlist();
