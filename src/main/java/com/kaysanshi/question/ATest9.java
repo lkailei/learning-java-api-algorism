@@ -25,7 +25,7 @@ public class ATest9 {
                     b = true;
                 }
             }
-            if (b == true) {
+            if (b) {
                 System.out.print(i + " ");
             }
         }
@@ -46,7 +46,7 @@ public class ATest9 {
                     b = true;
                 }
             }
-            if (b == true) {
+            if (b) {
                 System.out.print(i + " ");
             }
         }
