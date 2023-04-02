@@ -3,10 +3,7 @@ package com.kaysanshi.guava;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 多重映射接口扩展映射，使得其键一次可被映射到多个值。
@@ -47,6 +44,12 @@ public class MultiMapTest {
         System.out.println("Values of Multimap");
         Collection<String> values = multimap.values();
         System.out.println(values);
+
+
+        Map<String,String> maps = new HashMap<>();
+        maps.put("name","张三");
+        maps.put("name",null);
+        System.out.println(maps.values());
     }
 
     private Multimap<String,String> getMultimap(){
@@ -68,7 +71,5 @@ public class MultiMapTest {
         multimap.put("upper", "D");
         return multimap;
     }
-//更多请阅读：https://www.yiibai.com/guava/guava_multimap.html
-
 
 }

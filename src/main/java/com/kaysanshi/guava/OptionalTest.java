@@ -12,7 +12,6 @@ public class OptionalTest {
         Optional<Integer> a = Optional.fromNullable(value1);
         //Optional.of - throws NullPointerException if passed parameter is null
         Optional<Integer> b = Optional.of(value2);
-
         System.out.println(guavaTester.sum(a,b));
     }
 

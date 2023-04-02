@@ -35,7 +35,7 @@ public class StringOptionTest {
     }
 
     /**
-     *
+     * CharMatcher
      */
     private void testCharMatcher(){
         System.out.println(CharMatcher.digit().retainFrom("mahesh123")); // only the digits 123
