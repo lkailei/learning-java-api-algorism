@@ -104,6 +104,7 @@ Objects类提供适用于所有对象，如equals, hashCode等辅助函数
 - static boolean equal(Object a, Object b) 确定两个可能是空的对象是否相等。
 
 ## 集合工具
+
 - MultiSet:一个扩展来设置界面，允许重复的元素。
 - Multimap:一个扩展来映射接口，以便其键可一次被映射到多个值
 - BiMap: 一个扩展来映射接口，支持反向操作
@@ -181,8 +182,9 @@ public class MultisetTest {
 
 }
 ```
-                                                                 		
+
 ### Multimap类
+
 - `Map<K,Collection<V>> asMap()` 返回此multimap中的视图，从每个不同的键在键的关联值的非空集合映射。
 - `void clear()`将删除所
 
@@ -302,7 +304,7 @@ public class MultiMapTest {
 - `List<String> splitToList(CharSequence sequence)`  拆分序列化为字符串组成部分，并将其返回为不可变列表。
                                                       		
 ### CharMatcher
- 
+
 - `CharMatcher is(char match)`: 返回匹配指定字符的Matcher
 - `CharMatcher isNot(char match)`: 返回不匹配指定字符的Matcher
 - `CharMatcher anyOf(CharSequence sequence)`: 返回匹配sequence中任意字符的Matcher
@@ -327,9 +329,13 @@ public class MultiMapTest {
 - `String trimTrailingFrom(CharSequence sequence)`: 删除尾部匹配到的字符
 - `String collapseFrom(CharSequence sequence, char replacement)`: 将匹配到的组(连续匹配的字符)替换成replacement 
 - `String trimAndCollapseFrom(CharSequence sequence, char replacement)`: 先trim在replace
- 
-                                                      		
-                                                      			                                               		
+
+## Guava IO
+
+### ByteStreams
+
+## Guava 反射
+
 ## 缓存 Guava Cache
 
 ### 应用场景
@@ -339,6 +345,7 @@ public class MultiMapTest {
 - 有访问整个集合的需求
 - 数据允许不时时一致
 ### 优势
+
 - 缓存过期和淘汰机制 ：在GuavaCache中可以设置Key的过期时间，包括访问过期和创建过期
 GuavaCache在缓存容量达到指定大小时，采用LRU的方式，将不常使用的键值从Cache中删除
 
@@ -467,17 +474,19 @@ public class CacheTest2 {
 }
 ```
 ### 参数说明
-回收的参数：
-　　1. 大小的设置：CacheBuilder.maximumSize(long)  CacheBuilder.weigher(Weigher)  CacheBuilder.maxumumWeigher(long)
-　　2. 时间：expireAfterAccess(long, TimeUnit) expireAfterWrite(long, TimeUnit)
-　　3. 引用：CacheBuilder.weakKeys() CacheBuilder.weakValues()  CacheBuilder.softValues()
-　　4. 明确的删除：invalidate(key)  invalidateAll(keys)  invalidateAll()
-　　5. 删除监听器：CacheBuilder.removalListener(RemovalListener)
+**回收的参数**
 
-refresh机制：
-　　1. LoadingCache.refresh(K)  在生成新的value的时候，旧的value依然会被使用。
-　　2. CacheLoader.reload(K, V) 生成新的value过程中允许使用旧的value
-　　3. CacheBuilder.refreshAfterWrite(long, TimeUnit) 自动刷新cache
+1. 大小的设置：CacheBuilder.maximumSize(long)  CacheBuilder.weigher(Weigher)  CacheBuilder.maxumumWeigher(long)
+2. 时间：expireAfterAccess(long, TimeUnit) expireAfterWrite(long, TimeUnit)
+3. 引用：CacheBuilder.weakKeys() CacheBuilder.weakValues()  CacheBuilder.softValues()
+4. 明确的删除：invalidate(key)  invalidateAll(keys)  invalidateAll()
+5. 删除监听器：CacheBuilder.removalListener(RemovalListener)
+
+**refresh机制**
+
+1. LoadingCache.refresh(K)  在生成新的value的时候，旧的value依然会被使用。
+2. CacheLoader.reload(K, V) 生成新的value过程中允许使用旧的value
+3. CacheBuilder.refreshAfterWrite(long, TimeUnit) 自动刷新cache
 
 ### 数据移除
 
@@ -500,22 +509,24 @@ GuavaCache的时间移除方式分为：主备移除和被动移除
 Guava Cache的数据结构跟ConcurrentHashMap类似，但也不完全一样。最基本的区别是ConcurrentMap会一直保存所有添加的元素，直到显式地移除。
 相对地，Guava Cache为了限制内存占用，通常都设定为自动回收元素
 
-LocalCache为Guava Cache的核心类，包含一个Segment数组组成
-Segement数组的长度决定了cache的并发数
+LocalCache为Guava Cache的核心类，包含一个Segment数组组成 Segeent数组的长度决定了cache的并发数
 每一个Segment使用了单独的锁，其实每个Segment继承了ReentrantLock，对Segment的写操作需要先拿到锁
+
 每个Segment由一个table和5个队列组成
-5个队列：
-ReferenceQueue keyReferenceQueue ： 已经被GC，需要内部清理的键引用队列
-ReferenceQueue valueReferenceQueue ： 已经被GC，需要内部清理的值引用队列
-ConcurrentlinkedQueue<ReferenceEntry<k,v>> recencyQueue : LRU队列，当segment上达到临界值发生写操作时该队列会移除数据
-Queue<ReferenceEntry<K, V>> writeQueue：写队列，按照写入时间进行排序的元素队列，写入一个元素时会把它加入到队列尾部
-Queue<ReferenceEntry<K, V>> accessQueue：访问队列，按照访问时间进行排序的元素队列，访问(包括写入)一个元素时会把它加入到队列尾部
-1个table：
-AtomicReferenceArray<ReferenceEntry<K, V>> table：AtomicReferenceArray可以用原子方式更新其元素的对象引用数组
-ReferenceEntry<k,v>
-ReferenceEntry是Guava Cache中对一个键值对节点的抽象，每个ReferenceEntry数组项都是一条ReferenceEntry链。并且一个ReferenceEntry包含key、hash、valueReference、next字段
-（单链）
-Guava Cache使用ReferenceEntry接口来封装一个键值对，而用ValueReference来封装Value值
+
+**5个队列：**
+
+- ReferenceQueue keyReferenceQueue ： 已经被GC，需要内部清理的键引用队列
+- ReferenceQueue valueReferenceQueue ： 已经被GC，需要内部清理的值引用队列
+- ConcurrentLinkedQueue<ReferenceEntry<k,v>> recencyQueue : LRU队列，当segment上达到临界值发生写操作时该队列会移除数据
+- Queue<ReferenceEntry<K, V>> writeQueue：写队列，按照写入时间进行排序的元素队列，写入一个元素时会把它加入到队列尾部
+- Queue<ReferenceEntry<K, V>> accessQueue：访问队列，按照访问时间进行排序的元素队列，访问(包括写入)一个元素时会把它加入到队列尾部
+
+**1个table：**
+
+- AtomicReferenceArray<ReferenceEntry<K, V>> table：AtomicReferenceArray可以用原子方式更新其元素的对象引用数组
+- ReferenceEntry<k,v> ReferenceEntry是Guava Cache中对一个键值对节点的抽象，每个ReferenceEntry数组项都是一条ReferenceEntry链。并且一个ReferenceEntry包含key、hash、valueReference、next字段
+（单链）Guava Cache使用ReferenceEntry接口来封装一个键值对，而用ValueReference来封装Value值
 
 #### 回收机制
 Guava Cache提供了三种基本的缓存回收方式：
@@ -568,14 +579,351 @@ ExecutionException {
 }
 
 ```
-## 异步
-                                                  		
-                                                  			                                                        		
-                                                       		
-                                                       			
 
-                                           		
-                                                 			
+## Guava EventBus
+传统上，Java的进程内事件分发都是通过发布者和订阅者之间的显式注册实现的。设计EventBus就是为了取代这种显示注册方式，使组件间有了更好的解耦。EventBus不是通用型的发布-订阅实现，不适用于进程间通信。
+
+```java
+// Class is typically registered by the container.
+class EventBusChangeRecorder {
+    @Subscribe 
+    public void recordCustomerChange(ChangeEvent e) {
+        recordChange(e.getChange());
+    }
+}
+// somewhere during initialization
+eventBus.register(new EventBusChangeRecorder());
+// much later
+public void changeCustomer() {
+    ChangeEvent event = getChangeEvent();
+    eventBus.post(event);
+}
+```
+
+### 事件监听者[Listeners]
+
+- 监听特定事件（如，CustomerChangeEvent）：
+
+传统实现：定义相应的事件监听者类，如CustomerChangeEventListener；
+
+EventBus实现：以CustomerChangeEvent为唯一参数创建方法，并用Subscribe注解标记。
+
+- 把事件监听者注册到事件生产者：
+
+传统实现：调用事件生产者的registerCustomerChangeEventListener方法；这些方法很少定义在公共接口中，因此开发者必须知道所有事件生产者的类型，才能正确地注册监听者；
+
+EventBus实现：在EventBus实例上调用EventBus.register(Object)方法；请保证事件生产者和监听者共享相同的EventBus实例。
+
+- 按事件超类监听（如，EventObject甚至Object）：
+
+传统实现：很困难，需要开发者自己去实现匹配逻辑；
+
+EventBus实现：EventBus自动把事件分发给事件超类的监听者，并且允许监听者声明监听接口类型和泛型的通配符类型（wildcard，如 ? super XXX）。
+
+- 检测没有监听者的事件：
+
+传统实现：在每个事件分发方法中添加逻辑代码（也可能适用AOP）；
+
+EventBus实现：监听DeadEvent；EventBus会把所有发布后没有监听者处理的事件包装为DeadEvent（对调试很便利）。
+
+### 事件生产者[Producers]
+
+- 管理和追踪监听者：
+
+传统实现：用列表管理监听者，还要考虑线程同步；或者使用工具类，如EventListenerList；
+EventBus实现：EventBus内部已经实现了监听者管理。
+
+- 向监听者分发事件：
+
+传统实现：开发者自己写代码，包括事件类型匹配、异常处理、异步分发；
+EventBus实现：把事件传递给 EventBus.post(Object)方法。异步分发可以直接用EventBus的子类AsyncEventBus。
+
+### EVentBus使用
+消息记录
+```java
+/**
+ * 发布接口
+ **/
+public interface EventService {
+    /**
+     * 发布事件
+     *
+     * @param event
+     */
+    void publishEvent(Object event);
+}
+@Slf4j
+@Service
+public class EventServiceImpl implements EventService {
+    @Autowired
+    private EventBus eventBus;
+
+    @Override
+    public void publishEvent(Object event) {
+        log.debug("publish event: {}", event);
+        eventBus.post(event);
+    }
+}
+```
+发布者
+```java
+/**
+ * 可记录操作日志,标记接口
+ *
+ * @author hanbd
+ */
+public interface ILoggable {
+    /**
+     * 获取操作日志
+     *
+     * @return
+     */
+    OperationLog getLog();
+}
+
+/**
+ * 基础事件
+ *
+ * @author hanbd
+ */
+@Data
+@SuperBuilder
+public abstract class BaseEvent {
+    /**
+     * 触发人{@link User#getId() userId}
+     */
+    protected Integer userId;
+    /**
+     * 触发时间
+     */
+    protected LocalDateTime triggerTime;
+    /**
+     * 事件类型
+     */
+    protected EventTypeEnum eventType;
+    /**
+     * 企业id
+     */
+    @NotNull
+    protected Integer entId;
+    /**
+     * 项目Id
+     */
+    @Nullable
+    protected Integer projectId;
+    /**
+     * 标段id
+     */
+    @Nullable
+    protected Integer sectionId;
+    /**
+     * 单位工程Id
+     */
+    @Nullable
+    protected Integer unitId;
+    protected ProjectLevelInfo levelInfo;
+
+    protected BaseEvent(Integer userId, EventTypeEnum eventType, ProjectLevelInfo levelInfo) {
+        if (!isAllowedEventType(eventType)) {
+            throw new IllegalArgumentException("illegal eventType");
+        }
+        this.entId = TenantUtils.DEFAULT_TENANT;
+        this.userId = Preconditions.checkNotNull(userId);
+        this.eventType = Preconditions.checkNotNull(eventType);
+        this.triggerTime = LocalDateTime.now();
+        this.levelInfo = levelInfo;
+        if (Objects.nonNull(levelInfo)) {
+            this.projectId = levelInfo.getProjectId();
+            this.sectionId = levelInfo.getSectionId();
+            this.unitId = levelInfo.getUnitId();
+        }
+    }
+
+    /**
+     * 是否是允许的事件类型
+     *
+     * @param eventType
+     * @return
+     */
+    public final boolean isAllowedEventType(EventTypeEnum eventType) {
+        return allowedEventTypeSet().contains(eventType);
+    }
+
+    /**
+     * 允许的事件类型集合
+     *
+     * @return
+     */
+    protected abstract EnumSet<EventTypeEnum> allowedEventTypeSet();
+}
+
+/**
+ * 增删改查事件。增删改查全部记录日志
+ *
+ * @author hanbd
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+@SuperBuilder
+public abstract class AbstractLoggableEvent extends BaseEvent implements ILoggable {
+    protected AbstractLoggableEvent(Integer userId, EventTypeEnum eventType, ProjectLevelInfo levelInfo) {
+        super(userId, eventType, levelInfo);
+    }
+
+    @Override
+    public OperationLog getLog() {
+        LogBizInfo bizInfo = bizInformation();
+        return OperationLog.builder()
+                .userId(userId)
+                .operationTime(triggerTime)
+                .eventType(eventType)
+                .entId(TenantUtils.DEFAULT_TENANT)
+                .projectId(projectId)
+                .sectionId(sectionId)
+                .unitId(unitId)
+                .subjectId(bizInfo.getSubjectId())
+                .secondSubjectId(bizInfo.getSecondSubjectId())
+                .thirdSubjectId(bizInfo.getThirdSubjectId())
+                .memo(MoreObjects.firstNonNull(bizInfo.getMemo(), "无"))
+                .build();
+    }
+
+    /**
+     * 日志业务信息
+     *
+     * @return
+     */
+    protected abstract LogBizInfo bizInformation();
+}
+
+public class IssueEvent extends AbstractLoggableEvent {
+
+    private final Issue issue;
+    private final User user;
+    private final EventTypeEnum eventType;
+
+    public IssueEvent(User user, EventTypeEnum eventType, Issue issue) {
+        super(user.getId(), eventType, issue.getLevelInfo());
+        this.user = user;
+        this.issue = issue;
+        this.eventType = eventType;
+    }
+
+    @Override
+    protected LogBizInfo bizInformation() {
+        String action;
+        switch (eventType) {
+            case CREATE_ISSUE:
+                action = "新增问题";
+                break;
+            case DELETE_ISSUE:
+                action = "删除问题";
+                break;
+            default:
+                throw new IllegalArgumentException("非问题事件类型");
+        }
+        String memo = String.format("%s%s #%d-%s",
+                user.getUsername(), action, issue.getId(), issue.getDescription());
+        return LogBizInfo.builder()
+                .memo(memo)
+                .subjectId(issue.getId())
+                .build();
+    }
+
+    @Override
+    protected EnumSet<EventTypeEnum> allowedEventTypeSet() {
+        return EnumSet.of(EventTypeEnum.CREATE_ISSUE, EventTypeEnum.DELETE_ISSUE,
+                EventTypeEnum.SOLVE_ISSUE, EventTypeEnum.CHECK_REJECT_ISSUE,
+                EventTypeEnum.CHECK_PASS_ISSUE, EventTypeEnum.REVIEW_REJECT_ISSUE,
+                EventTypeEnum.REVIEW_PASS_ISSUE);
+    }
+}
+```
+
+业务中使用
+
+```java
+// 业务中使用
+IssueEvent issueEvent = new IssueEvent(getUser(), EventTypeEnum.CREATE_ISSUE, issue);
+eventService.publishEvent(issueEvent);
+```
+订阅者
+
+```java
+   @Subscribe
+    @SuppressWarnings("UnstableApiUsage")
+    public void receiveIssueEvent(IssueEvent event) {
+        EventTypeEnum eventType = event.getEventType();
+        switch (eventType) {
+            case CREATE_ISSUE:
+            case SOLVE_ISSUE:
+            case CHECK_PASS_ISSUE:
+            case CHECK_REJECT_ISSUE:
+            case REVIEW_REJECT_ISSUE:
+                break;
+            default:
+                return;
+        }
+        Issue issue = event.getIssue();
+        IssueDetailVO issueDetail = issueService.getIssueDetail(issue.getId());
+        IssueVO issueSolve = issueDetail.getSubmitHistory();
+        List<IssueHistoryVO> issueHistories = issueDetail.getHistory();
+        String questionType = IssueType.of(issue.getType()).getName();
+        List<KvPair> kvList = Lists.newArrayList();
+        String title;
+        String body;
+        MsgJumpType msgJumpType;
+        MsgModuleType msgModuleType;
+        IssueHistoryVO history;
+        PrjPerson creator = personService.getPerson(issue.getSubmitterId())
+                .orElseThrow(() -> new CommonException("人员不存在"));
+        List<User> receivers;
+        String bizStr;
+        switch (event.getEventType()) {
+            case CREATE_ISSUE:
+                String creatorName = creator.getName();
+                title = String.format("有一条%s问题待处理", questionType);
+                body = String.format("%s上报了问题<span>%s</span>，请及时查看并处理", creatorName, issue.getDescription());
+                kvList.add(new KvPair("问题类型", questionType));
+                kvList.add(new KvPair("上报人", creatorName));
+                kvList.add(new KvPair("上报时间", formatTime(issue.getSubmitTime())));
+                // 接收人
+                receivers = personToUser(issueSolve.getSolvers());
+                msgModuleType = issue.getType().equals(1) ? MsgModuleType.QUALITY_QUESTION_EXECUTE : MsgModuleType.SAFE_QUESTION_EXECUTE;
+                msgJumpType = MsgJumpType.QUESTION_EXECUTE;
+                bizStr = "待处理";
+                break;
+           
+            default:
+                return;
+        }
+        // 发送个推消息
+    }
+```
+## 并发
+
+
+### Guava Monitor
+
+### ListenableFuture
+
+### FutureCallback
+
+### SetableFuture
+
+### AsuncFallback
+
+### Futures
+
+### RateLimiter
+
+
+​                                                  			                                                        		
+​                                                       		
+​                                                       			
+
+
+​                                                 			
 
 
 
