@@ -115,6 +115,7 @@ Objects类提供适用于所有对象，如equals, hashCode等辅助函数
 ### Multiset类
 
 Multiset接口扩展设置有重复的元素，并提供了各种实用的方法来处理这样的元素在集合中出现。
+Multiset 可以看成ArrayList和Map的结合体。Multiset是没有元素顺序限制的ArrayList。Multiset提供了键为元素，值为计数的Map
 
 - `boolean add(E element)` 添加一个出现的指定元素这个multiset。
 - `int add(E element, int occurrences)` 增加大量的元素到这个multiset。
@@ -183,7 +184,19 @@ public class MultisetTest {
 }
 ```
 
+### SortedMultiSet类
+
 ### Multimap类
+在jdk中的Map 存储key-value 型数据结构，put进入一个key相同的数据数据会被覆盖。
+```java
+Map<String,String> map = new HashMap<>();
+map.put("key","value1");
+map.put("key","value2");
+```
+上面map中只会存key->value2 的值，会把相同key的值给覆盖。
+
+**Guava为我们提供了Multimap，可以用来做一个Key映射多个值的操作**
+
 
 - `Map<K,Collection<V>> asMap()` 返回此multimap中的视图，从每个不同的键在键的关联值的非空集合映射。
 - `void clear()`将删除所
@@ -279,8 +292,436 @@ public class MultiMapTest {
 }
 ```
 ### BiMap类
+Guava提供了BiMap，它是一种特殊的Map，可以实现键值的反转
+
+在jdk中我们想维护一个双向Map来实现键值的反转
+```java
+Map<String,String> map1 = Maps.newHashMap();
+Map<String,String> map2 = Maps.newHashMap();
+map1.put("key","value");
+map2.put("value","key");
+```
+```java
+public class BiMapTest {
+    public static void main(String[] args) {
+        BiMap<String,String> biMap = HashBiMap.create();
+        biMap.put("a","123");
+        System.out.println(biMap); // {a=123}
+        //对键值对进行反转
+        System.out.println(biMap.inverse()); // {123=a}
+
+        //试图将一个key映射到已经存在的值上，会抛异常 value already present: 123
+        //biMap.put("b","123");
+
+        //强值将一个key映射到已经存在的值上，会将原来的key覆盖掉
+        biMap.forcePut("b","123");
+        System.out.println(biMap);// {b=123}
+    }
+}
+```
+可以看出，因为BiMap要支持反转，所以它的key和value都必须是唯一的，要不然反转过来就存在一对多的情况
 
 ### Table类
+在JDK中当需要做key映射到Key-value对时，你需要这样写Map<K,Map<K,V>>,这种写法同样不够友好，同时也不便维护
+
+这实际上就是一个表格的行、列、值的结构，Guava里面提供了表格来解决这种场景
+
+```java
+public class TableTest {
+    public static void main(String[] args) {
+        //创建row,column,value结构的table
+        Table<String,String,Integer> table = HashBasedTable.create();
+        table.put("a1","c1",23);
+        table.put("a1","c2",77);
+        table.put("a2","c2",44);
+        //通过rowKey获取columnKey->value的映射关系
+        System.out.println(table.row("a1")); // {c1=23, c2=77}
+        //通过columnKey获取rowKey ->value的映射关系
+        System.out.println(table.column("c2")); // {a1=77, a2=44}
+    }
+}
+```
+
+
+## 不可变集合(Immutable Collections)
+对象创建后，所有的状态和属性在整个生命周期内不能被修改.同理，不可变集合就是集合创建后，不能对集合中的对象进行修改
+
+好处：1. 让并发处理变得简单 2. 消除副作用 3. 减少集合出错概率
+
+**为何使用不可变集合**
+
+1. 不可变对象提供给别人使用时是安全的，因为不可变，所有人都无法进行修改，只能读
+2. 支持多个线程调用，不存在竞争的问题，天然支持多线程
+3. 不可变集合节省内存空间，因为不可变，集合空间在创建时就已经确定好了，不用考虑扩容等问题，内存利用率高
+4 .不可变集合可用于常量
+
+**智能的Copyof**
+
+在常量时间内使用底层数据结构是可能的——例如，ImmutableSet.copyOf(ImmutableList)就不能在常量时间内完成
+不会造成内存泄露——例如，你有个很大的不可变集合ImmutableList hugeList， ImmutableList.copyOf(hugeList.subList(0, 10))就会显式地拷贝，以免不必要地持有hugeList的引用
+不改变语义——所以ImmutableSet.copyOf(myImmutableSortedSet)会显式地拷贝，因为和基于比较器的ImmutableSortedSet相比，ImmutableSet对hashCode()和equals有不同语义
+
+**asList视图**
+
+所有不可变集合都有一个asList()方法提供ImmutableList视图，来帮助你用列表形式方便地读取集合元素。例如，你可以使用sortedSet.asList().get(k)从ImmutableSortedSet中读取第k个最小元素。
+asList()返回的ImmutableList通常是——并不总是——开销稳定的视图实现，而不是简单地把元素拷贝进List。也就是说，asList返回的列表视图通常比一般的列表平均性能更好，比如，在底层集合支持的情况下，它总是使用高效的contains方法。
+
+### ImmutableCollection
+### ImmutableList
+### ImmutableSet
+### ImmutableSortSet
+### ImmutableMap
+### ImmutableMultiset
+### ImmutableSortMultiset
+### ImmutableMultiMap
+### ImmutableListMultiMap
+### ImmutableSetMultiMap
+### ImmutableBiMap
+### ImmutableClassToInstanceMap
+### ImmutableTable
+
+## 集合工具类
+
+### Lists
+
+**各种创建list的方法**
+
+- asList()将数据组转成list
+- newArrayList()
+- newArrayListWithCapacity(10) 指定容量的创建
+- newArrayListWithExpectedSize（20） 初始化指定容量
+- newCopyOnWriteArrayList()
+- newLinkedList()
+
+**其他方法**
+
+- partition(List<T> list, int size) 将list按指定大小分隔成多个list
+- cartesianProduct(List<? extends B>... lists) 获取多个list的笛卡尔集
+- charactersOf(String str) 将字符串转成字符集合
+- reverse(List<T> list) 反转list
+- transform(List<F> fromList, Function<? super F, ? extends T> function) 数据转换
+
+```java
+public class ListsTest {
+    public static void main(String[] args) {
+        //将数组转成list,并在开头位置插入元素
+        List<String> list = Lists.asList("a",new String[]{"b","c","d"});
+        List<String> list1 = Lists.asList("a","b",new String[]{"c","d","e"});
+
+        //直接创建ArrayList
+        ArrayList<String> arrayList = Lists.newArrayList();
+        //创建ArrayList,并初始化
+        ArrayList<String> arrayList1 = Lists.newArrayList("a","b","c");
+        //基于现有的arrayList,创建一个arrayList
+        ArrayList<String> arrayList2 = Lists.newArrayList(arrayList1);
+        //初始化指定容量大小的ArrayList，其中容量指ArrayList底层依赖的数组的length属性值，常用于提前知道ArrayList大小的情况的初始化
+        ArrayList<String> arrayList3 = Lists.newArrayListWithCapacity(10);
+        //初始化预定容量大小的ArrayList，返回的list的实际容量为5L + estimatedSize + (estimatedSize / 10)，常用于不确定ArrayList大小的情况的初始化
+        ArrayList<String> arrayList4 =Lists.newArrayListWithExpectedSize(20);
+        //创建CopyOnWriteArrayList
+        CopyOnWriteArrayList<String> copyOnWriteArrayList = Lists.newCopyOnWriteArrayList();
+        //创建linkedList
+        LinkedList<String> linkedList = Lists.newLinkedList();
+
+        ListsTest test = new ListsTest();
+        test.partition();
+        test.cartesianProduct();
+        test.charactersOf();
+        test.reverse();
+        test.transForm();
+    }
+
+    /**
+     * 分割list
+     */
+    public void partition(){
+        List<String> list = Lists.newArrayList("a","b","c","d","e");
+        //将list按大小为2分隔成多个list
+        List<List<String>> splitList = Lists.partition(list,2);
+        System.out.println(splitList);// [[a, b], [c, d], [e]]
+    }
+
+    /**
+     * 笛卡尔积
+     */
+    public void cartesianProduct(){
+        List<String> list1 = Lists.newArrayList("a","b","c");
+        List<String> list2 = Lists.newArrayList("d","e","f");
+        List<String> list3 = Lists.newArrayList("1","2","3");
+        //获取多个list的笛卡尔集
+        List<List<String>> list = Lists.cartesianProduct(list1,list2,list3);
+        System.out.println(list);// [[a, d, 1], [a, d, 2], [a, d, 3], [a, e, 1], [a, e, 2], [a, e, 3], [a, f, 1], [a, f, 2], [a, f, 3], [b, d, 1], [b, d, 2], [b, d, 3], [b, e, 1], [b, e, 2], [b, e, 3], [b, f, 1], [b, f, 2], [b, f, 3], [c, d, 1], [c, d, 2], [c, d, 3], [c, e, 1], [c, e, 2], [c, e, 3], [c, f, 1], [c, f, 2], [c, f, 3]]
+
+    }
+
+    /**
+     * 将字符串转成字符集合
+     */
+    public void charactersOf(){
+        //将字符串转成字符集合
+        ImmutableList<Character> list = Lists.charactersOf("ababcdfb");
+        System.out.println(list);// [a, b, a, b, c, d, f, b]
+    }
+
+    /**
+     * 反转list
+     */
+    public void reverse(){
+        List<String> list = Lists.newArrayList("a","b","c","1","2","3");
+        //反转list
+        List<String> reverseList = Lists.reverse(list);
+        System.out.println(reverseList);// [3, 2, 1, c, b, a]
+    }
+
+    /**
+     * 数据转换
+     */
+    public void transForm(){
+        List<String> list = Lists.newArrayList("a","b","c");
+        //把list中的每个元素拼接一个1
+        List<String> list1 = Lists.transform(list,str -> str + "1");
+        System.out.println(list1); //[a1, b1, c1]
+    }
+
+
+}
+
+```
+### Sets
+
+**各种创建set的方法**
+- newHashSet()  创建hashSet
+- newLinkedHashSet() 创建linKedHashSet
+- newTreeSet() 创建TreeSet
+- newConcurrentHashSet() 创建不可变HashSet
+
+
+- cartesianProduct(Set<? extends B>... sets) 笛卡尔集
+- combinations(Set<E> set, final int size) 按指定大小进行排列组合
+- difference(final Set<E> set1, final Set<?> set2) 两个集合的差集 2与1 的差集
+- intersection(final Set<E> set1, final Set<?> set2) 交集
+- filter(Set<E> unfiltered, Predicate<? super E> predicate) 过滤
+- powerSet(Set<E> set) 获取set可分隔成的所有子集
+- union(final Set<? extends E> set1, final Set<? extends E> set2) 并集
+
+```java
+public class SetsTest {
+    public static void main(String[] args) {
+        HashSet<String> set = Sets.newHashSet();
+        LinkedHashSet<Object> hashSet = Sets.newLinkedHashSet();
+        HashSet<Object> objects = Sets.newHashSetWithExpectedSize(10);
+        TreeSet<Comparable> comparables = Sets.newTreeSet();
+        Set<Object> objects1 = Sets.newConcurrentHashSet();
+        SetsTest setsTest = new SetsTest();
+        setsTest.cartesianProduct();
+    }
+
+    /**
+     *
+     */
+    public void cartesianProduct(){
+        Set<String> set1 = Sets.newHashSet("a","b","c");
+        Set<String> set2 = Sets.newHashSet("1","2","3");
+        Set<String> set3 = Sets.newHashSet("@","2","&");
+        //多个Set的笛卡尔集，参数接收多个set集合
+        Set<List<String>> sets = Sets.cartesianProduct(set1,set2,set3);
+        System.out.println(sets);
+
+        List<Set<String>> list = Lists.newArrayList(set1,set2,set3);
+        //也可以把多个Set集合，放到一个list中，再计算笛卡尔集
+        Set<List<String>> sets1 = Sets.cartesianProduct(list);
+        System.out.println(sets1);
+        // 按指定大小进行排列组合
+        Set<Set<String>> combinations = Sets.combinations(set1, 2);
+        System.out.println(combinations); //Sets.combinations([a, b, c], 2)
+        // 两个集合的差集
+        System.out.println(Sets.difference(set1,set2));// [a, b, c]
+        System.out.println(Sets.difference(set2,set1));// [1, 2, 3]
+        // 在后者中没有的前者列出来 差集
+        System.out.println(Sets.difference(set2,set3));// [1, 3]
+        // 交集
+        System.out.println(Sets.intersection(set1,set2));// []
+        System.out.println(Sets.intersection(set2,set3));// [2]
+        // 并集
+        System.out.println(Sets.union(set2,set3));// [1, 2, 3, @, &]
+    }
+}
+```
+### Maps
+
+**创建各种Map的方法**
+
+- Maps.newHashMap();
+- Maps.newConcurrentMap();
+- Maps.newIdentityHashMap();
+- Maps.newLinkedHashMap();
+- Maps.newTreeMap();
+
+**其他方法**
+- asMap(Set<K> set, Function<? super K, V> function) set转map
+- difference(Map<? extends K, ? extends V> left, Map<? extends K, ? extends V> right) 计算map的差值
+- filterEntries(Map<K, V> unfiltered, Predicate<? super Entry<K, V>> entryPredicate) 通过Entry过滤
+- filterKeys(Map<K, V> unfiltered, final Predicate<? super K> keyPredicate) 通过Key过滤
+- filterValues(Map<K, V> unfiltered, final Predicate<? super V> valuePredicate) 通过value过滤
+- transformEntries(Map<K, V1> fromMap, EntryTransformer<? super K, ? super V1, V2> transformer) 转换Entry
+- transformValues(Map<K, V1> fromMap, Function<? super V1, V2> function) 转换value
+- uniqueIndex(Iterable<V> values, Function<? super V, K> keyFunction)  根据list中的key生产map
+```java
+public class MapsTest {
+    public static void main(String[] args) {
+        MapsTest test = new MapsTest();
+        test.setToMap();
+        test.difference();
+        test.filterEntries();
+        test.filterKeys();
+        test.filterValues();
+        test.transFormEntries();
+        test.transformValues();
+    }
+
+    public void createDemo() {
+        Maps.newHashMap();
+        Maps.newHashMapWithExpectedSize(10);
+        //Maps.newEnumMap();
+        Maps.newConcurrentMap();
+        Maps.newIdentityHashMap();
+
+        Maps.newLinkedHashMap();
+        Maps.newLinkedHashMapWithExpectedSize(10);
+
+        Maps.newTreeMap();
+    }
+
+    /**
+     * set TOMap
+     */
+    public void setToMap() {
+        Set<String> set = Sets.newHashSet("a", "b", "c");
+        //将set转成Map,key为set元素,value为每个元素的长度
+        Map<String, Integer> map = Maps.asMap(set, String::length);
+        System.out.println(map);//     {a=1, b=1, c=1}}
+    }
+
+    /**
+     * 计算map的差值
+     */
+    public void difference(){
+        Map<String,String> map1 = Maps.newHashMap();
+        map1.put("a","1");
+        map1.put("b","2");
+        map1.put("c","3");
+        Map<String,String> map2 = Maps.newHashMap();
+        map2.put("a","1");
+        map2.put("e","5");
+        map2.put("f","6");
+        //mapDifference是将两个map相同的部分剔除
+        MapDifference<String,String> mapDifference = Maps.difference(map1,map2);
+        //两个Map相同的部分
+        System.out.println(mapDifference.entriesInCommon()); //  {a=1}
+        //左边集合剔除相同部分后的剩余
+        System.out.println(mapDifference.entriesOnlyOnLeft()); // {b=2, c=3}
+        //右边集合剔除相同部分后的剩余
+        System.out.println(mapDifference.entriesOnlyOnRight());// {e=5, f=6}
+    }
+
+
+    /**
+     * 通过Entry过滤
+     */
+    public void filterEntries(){
+        Map<String,String> map1 = Maps.newHashMap();
+        map1.put("a","1");
+        map1.put("b","2");
+        map1.put("c","3");
+        Map<String,String> result = Maps.filterEntries(map1,item -> !item.getValue().equalsIgnoreCase("2"));
+        System.out.println(result);// {a=1, c=3}
+
+    }
+
+    /**
+     * 通过key过滤
+     */
+    public void filterKeys(){
+        Map<String,String> map1 = Maps.newHashMap();
+        map1.put("a","1");
+        map1.put("b","2");
+        map1.put("c","3");
+        Map<String,String> result = Maps.filterKeys(map1, item -> !item.equalsIgnoreCase("b"));
+        System.out.println(result);// {a=1, c=3}
+    }
+
+    /**
+     * 过滤value
+     */
+    public void filterValues(){
+        Map<String,String> map1 = Maps.newHashMap();
+        map1.put("a","1");
+        map1.put("b","2");
+        map1.put("c","3");
+        Map<String,String> result =  Maps.filterValues(map1,item -> !item.equalsIgnoreCase("3"));
+        System.out.println(result);// {a=1, b=2}
+    }
+
+    /**
+     * 转换entry
+     */
+    public void transFormEntries(){
+        Map<String,String> map1 = Maps.newHashMap();
+        map1.put("a","1");
+        map1.put("b","2");
+        map1.put("c","3");
+        Map<String,String> result = Maps.transformEntries(map1,(k,v) -> k + v);
+        System.out.println(result);// {a=a1, b=b2, c=c3}
+    }
+
+    /**
+     * 转换value
+     */
+    public void transformValues(){
+        Map<String,String> map1 = Maps.newHashMap();
+        map1.put("a","1");
+        map1.put("b","2");
+        map1.put("c","3");
+        Map<String,String> result = Maps.transformValues(map1, value -> value + 10);
+        System.out.println(result); // {a=110, b=210, c=310}
+    }
+    /**
+     * uniqueINdex 根据key生成map要确保key值唯一
+     */
+    public void uniqueIndex(){
+        List<Animal> animals = new ArrayList<>();
+        ImmutableMap<Integer, Animal> integerAnimalImmutableMap = Maps.uniqueIndex(animals, Animal::getId);
+        System.out.println(integerAnimalImmutableMap.entrySet());// []
+    }
+
+
+
+}
+class Animal{
+    private Integer id ;
+
+    private String name;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+```
+
+## Graphs
 
 ## 字符串工具
 - Joiner ：实现加入对象，字符串
@@ -333,6 +774,9 @@ public class MultiMapTest {
 ## Guava IO
 
 ### ByteStreams
+
+### CharStreams
+
 
 ## Guava 反射
 
@@ -915,15 +1359,7 @@ eventService.publishEvent(issueEvent);
 
 ### Futures
 
-### RateLimiter
-
-
-​                                                  			                                                        		
-​                                                       		
-​                                                       			
-
-
-​                                                 			
+### RateLimiter                                       			
 
 
 

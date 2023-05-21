@@ -6,6 +6,9 @@ import com.google.common.collect.Multiset;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * 可以具有相同元素的Set
+ */
 public class MultisetTest {
     public static void main(String args[]){
         //create a multiset collection

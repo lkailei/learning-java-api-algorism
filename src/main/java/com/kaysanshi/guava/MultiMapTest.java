@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import java.util.*;
 
 /**
+ * 一个key多个value值
  * 多重映射接口扩展映射，使得其键一次可被映射到多个值。
  */
 public class MultiMapTest {
@@ -15,17 +16,17 @@ public class MultiMapTest {
 
         List<String> lowerList = (List<String>)multimap.get("lower");
         System.out.println("Initial lower case list");
-        System.out.println(lowerList.toString());
+        System.out.println(lowerList.toString()); //  [a, b, c, d, e]
         lowerList.add("f");
         System.out.println("Modified lower case list");
-        System.out.println(lowerList.toString());
+        System.out.println(lowerList.toString()); // [a, b, c, d, e, f]
 
         List<String> upperList = (List<String>)multimap.get("upper");
         System.out.println("Initial upper case list");
-        System.out.println(upperList.toString());
+        System.out.println(upperList.toString());// [A, B, C, D]
         upperList.remove("D");
         System.out.println("Modified upper case list");
-        System.out.println(upperList.toString());
+        System.out.println(upperList.toString()); // [A, B, C]
 
         Map<String, Collection<String>> map = multimap.asMap();
         System.out.println("Multimap as a map");
